@@ -1,7 +1,6 @@
 import pdfplumber
 from tqdm import tqdm
 from .ocr_engine import ocr_core
-import os
 import multiprocessing as mp
 from PIL.Image import Image
 from pdfplumber.page import Page
@@ -64,7 +63,7 @@ def extract_text_from_pdf(pdf_path_or_fp, lang, tessdata_dir) -> list[str]:
         texts: list[str] = []
 
         if num_pages >= 3:  # Use multiprocessing for larger PDFs
-            num_processes = min(os.cpu_count(), num_pages)
+            num_processes = min(10, num_pages)
             print(f"Using {num_processes} processes for OCR")
             with mp.Pool(processes=num_processes) as pool:
                 ocr_core_partial = partial(ocr_core, lang=lang, tessdata_dir=tessdata_dir)
