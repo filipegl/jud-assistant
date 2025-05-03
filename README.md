@@ -1,6 +1,6 @@
 # JudAssistant: Análise de Acórdãos Jurídicos com LLMs
 
-Este projeto é uma prova de conceito para análise automatizada de acórdãos jurídicos utilizando Modelos de Linguagem (LLMs).  
+Este projeto é uma prova de conceito para análise automatizada de acórdãos jurídicos utilizando LLMs.
 O objetivo é demonstrar a aplicação prática de LLMs em tarefas de classificação, extração, resumo técnico estruturado e interação humana (QA).
 
 ## Fonte dos Dados
@@ -55,7 +55,7 @@ Permite ao usuário fazer perguntas sobre o acórdão, com as respostas geradas 
 
 Para essa atividade, incluí o acórdão como parte do _system prompt_. Com base nisso, a cada iteração, o modelo terá o documento como contexto
 
-## Abordagem Adotada
+## Abordagens Adotadas
 
 - **Prompt Engineering modularizado**  
   Cada tarefa possui seu próprio prompt dedicado, maximizando o controle de cada resposta.
@@ -70,8 +70,13 @@ Para essa atividade, incluí o acórdão como parte do _system prompt_. Com base
   Pydantic é utilizado para validação de saídas estruturadas nas tarefas de classificação e extração de entidades.
 
 - **Modelos utilizados:**
+
   - Desenvolvimento: `llama3.2:3b` (via Ollama)
   - Produção: `gpt-4.1-nano` (via API OpenAI)
+
+- **Leitura de documentos via OCR** \
+  Extração de texto a partir de imagens como JPG ou PDF.
+  Foi utilizada a engine do Tesseract.
 
 ## ⚙️ Resultados Práticos e Exemplos
 
@@ -83,8 +88,11 @@ Os resultados são demonstrados tanto no notebook [`notebooks/experiments.ipynb`
 
 ### Como rodar o streamlit?
 
-> **Importante**: Para rodar os modelos de forma local é necessário baixar e instalar o [Ollama](https://ollama.com/download).
-> Para rodar os modelos da openai, renomeie o `.env.example` para `.env` e dentro do arquivo insira sua chave da API.
+> **Importante**:
+>
+> - Para rodar os modelos de LLM de forma local é necessário baixar e instalar o [Ollama](https://ollama.com/download).
+> - Para utilizar a feature de leitura de PDFs, baixe e instale o [Tesseract](https://tesseract-ocr.github.io/tessdoc/Installation.html).
+> - Para rodar os modelos da openai, renomeie o `.env.example` para `.env` e dentro do arquivo insira sua chave da API.
 
 Crie um novo ambiente python, acesse-o, instale as bibliotecas e execute a aplicação, como mostra o snippet a seguir:
 

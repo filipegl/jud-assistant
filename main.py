@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.llm_adapter import LLMAdapter
 from utils.task_handlers import summarize_acordao, classify_acordao, extract_entities, qa_acordao
+from ocr.file_handler import extract_text
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,26 +24,54 @@ summary = st.session_state["summary"] if "summary" in st.session_state else None
 categories = st.session_state["categories"] if "categories" in st.session_state else None
 entities = st.session_state["entities"] if "entities" in st.session_state else None
 
+
+@st.cache_data
+def cached_extract_text(file_path, **kwargs) -> str:
+    return extract_text(file_path, **kwargs)
+
+
 _, left_col, right_col, _ = st.columns([0.05, 0.6, 0.3, 0.05])  # percentages of the column widths
 with left_col:
     st.title("Analisador de Processos Judiciais")
 
-    acordao = st.text_area(
-        label="Cole o texto do acórdão aqui:",
-        height=300,
-        help="Cole o texto completo do acórdão, incluindo ementa, decisão e fundamentos jurídicos."
+    uploaded_file = st.file_uploader(
+        label="Faça upload do arquivo do processo (PDF ou imagem):",
+        type=["pdf", "png", "jpg"],
+        help="Você pode fazer upload de um arquivo para extração automática do texto.",
     )
 
+    if uploaded_file:
+        with st.spinner("Extraindo texto do arquivo. Isto pode levar alguns segundos..."):
+            try:
+                extracted_text = cached_extract_text(uploaded_file)
+                st.session_state["acordao"] = extracted_text
+
+                st.success("Texto extraído com sucesso! Você pode editá-lo abaixo.")
+            except Exception as e:
+                st.error(f"Erro ao processar o arquivo: {e}")
+
+    acordao = st.text_area(
+        label="Ou cole o texto do acórdão aqui:",
+        value=st.session_state.get("acordao", ""),
+        height=300,
+        help="Cole o texto completo do acórdão, incluindo ementa, decisão e fundamentos jurídicos.",
+    )
+
+    st.session_state["acordao"] = acordao
+
     if st.button("Gerar Análise", type="primary", use_container_width=True):
-        with st.spinner("Resumindo o acórdão..."):
-            summary = summarize_acordao(llm, acordao)
-            st.session_state["summary"] = summary
-        with st.spinner("Classificando o acórdão..."):
-            categories = classify_acordao(llm, acordao)
-            st.session_state["categories"] = categories
-        with st.spinner("Extraindo entidades..."):
-            entities = extract_entities(llm, acordao)
-            st.session_state["entities"] = entities
+        if not acordao.strip():
+            st.warning("Por favor, forneça o texto do acórdão antes de continuar.")
+        else:
+            with st.spinner("Resumindo o acórdão..."):
+                summary = summarize_acordao(llm, acordao)
+                st.session_state["summary"] = summary
+            with st.spinner("Classificando o acórdão..."):
+                categories = classify_acordao(llm, acordao)
+                st.session_state["categories"] = categories
+            with st.spinner("Extraindo entidades..."):
+                entities = extract_entities(llm, acordao)
+                st.session_state["entities"] = entities
 
     if summary or categories or entities:
         if st.button("Limpar Tudo", type="secondary", use_container_width=True):
